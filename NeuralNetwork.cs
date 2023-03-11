@@ -7,7 +7,7 @@ public class NeuralNetwork
     private int numberOfHiddenLayers { get; set; }
     public List<Matrix> LAYERS = new List<Matrix>();
     public List<Matrix> WEIGHTS = new List<Matrix>();
-    public List<Func<double,double>> ACTIVATION_FUNCTIONS = new List<Func<double,double>>();
+    public Func<double, double>[] ACTIVATION_FUNCTIONS;
 
 
     public enum ActivationFunction
@@ -52,30 +52,16 @@ public class NeuralNetwork
             LAYERS.Add(new Matrix(1,defaultSizeOfLayers));
             WEIGHTS.Add(new Matrix(defaultSizeOfLayers,defaultSizeOfLayers));
         }
-        LAYERS.Add(new Matrix(1, defaultSizeOfLayers));
+            LAYERS.Add(new Matrix(1, defaultSizeOfLayers));
 
-        for(int i = 0; i < LAYERS.Count; i++)
+        ACTIVATION_FUNCTIONS = new Func<double, double>[LAYERS.Count];
+        for (int i = 0; i < LAYERS.Count; i++)
         {
-            //default NO FUNCTION
-            ACTIVATION_FUNCTIONS.Add(x => x);
+            ACTIVATION_FUNCTIONS[i] = ActivationFuncDict[ActivationFunction.None];
         }
     }
 
-
-    /// <summary>
-    /// Constructor for neural netork using additional parameter - default Function
-    /// <para> Default function is setted like this :</para>
-    /// <br>InputLayer   func = x => x </br>
-    /// <br>HiddenLayer1 func = defaultFunction</br>
-    /// <br>HiddenLayer2 func = defaultFunction</br>
-    /// <br>...</br>
-    /// <br>HiddenLayerN func = defaultFunction</br>
-    /// <br>OutputLayer  func = defaultFunction</br>
-    /// </summary>
-    /// <param name="numberOfHiddenLayers">lol</param>
-    /// <param name="defaultSizeOfLayers"></param>
-    /// <param name="defaultFunction"></param>
-    public NeuralNetwork(int numberOfHiddenLayers, int defaultSizeOfLayers, ActivationFunction defaultFunction)
+    public NeuralNetwork(int numberOfHiddenLayers, int defaultSizeOfLayers, ActivationFunction HiddenLayersActivationFunction)
     {
         this.numberOfHiddenLayers = numberOfHiddenLayers;
         for (int i = 0; i < numberOfHiddenLayers + 1; i++)
@@ -83,14 +69,33 @@ public class NeuralNetwork
             LAYERS.Add(new Matrix(1, defaultSizeOfLayers));
             WEIGHTS.Add(new Matrix(defaultSizeOfLayers, defaultSizeOfLayers));
         }
-        LAYERS.Add(new Matrix(1, defaultSizeOfLayers));
+            LAYERS.Add(new Matrix(1, defaultSizeOfLayers));
 
-        for(int i = 0; i < LAYERS.Count; i++)
+        ACTIVATION_FUNCTIONS = new Func<double, double>[LAYERS.Count];
+        for (int i = 0; i < LAYERS.Count; i++)
         {
-            //default NO FUNCTION
-            ACTIVATION_FUNCTIONS.Add(x => x);
+            ACTIVATION_FUNCTIONS[i] = ActivationFuncDict[HiddenLayersActivationFunction];
         }
     }
+
+    public NeuralNetwork(int[] NumberOfPerceptronsInLayers , ActivationFunction HiddenLayersActivationFunction)
+    {
+        this.numberOfHiddenLayers = numberOfHiddenLayers;
+        for (int i = 0; i < numberOfHiddenLayers + 1; i++)
+        {
+            LAYERS.Add(new Matrix(1, NumberOfPerceptronsInLayers[i]));
+            WEIGHTS.Add(new Matrix(NumberOfPerceptronsInLayers[i], NumberOfPerceptronsInLayers[i+1]));
+        }
+        LAYERS.Add(new Matrix(1, NumberOfPerceptronsInLayers[NumberOfPerceptronsInLayers.Count() - 1]));
+
+        ACTIVATION_FUNCTIONS = new Func<double, double>[LAYERS.Count];
+        for (int i = 0; i < LAYERS.Count; i++)
+        {
+            ACTIVATION_FUNCTIONS[i] = ActivationFuncDict[HiddenLayersActivationFunction];
+        }
+    }
+
+
 
 
 
