@@ -135,4 +135,6 @@ public class NeuralNetwork
 
     }
 
+    //by Pawel Duplaga
+
 }
