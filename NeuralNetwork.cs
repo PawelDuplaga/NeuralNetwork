@@ -7,24 +7,40 @@ public class NeuralNetwork
     private int numberOfHiddenLayers { get; set; }
     public List<Matrix> LAYERS = new List<Matrix>();
     public List<Matrix> WEIGHTS = new List<Matrix>();
-    public List<Func<double,double>> CUSTOM_ACTIVATION_FUNCTIONS = new List<Func<double,double>>();
+    public List<Func<double,double>> ACTIVATION_FUNCTIONS = new List<Func<double,double>>();
 
 
     public enum ActivationFunction
     {
-        ReLU ,
+        HardSigmoid,
+        BinaryStep,
+        LeakyReLU,
+        Softplus,
+        Softsign,
         Sigmoid,
-        Custom,
+        Swish,
+        Tanh,
+        ReLU,
+        GELU,
+        ELU,
         None
     }
 
     public Dictionary<ActivationFunction, Func<double, double>> ActivationFuncDict
         = new Dictionary<ActivationFunction, Func<double, double>>()
             {
-                { ActivationFunction.ReLU, ActivationFunctions.ReLU },
+                { ActivationFunction.HardSigmoid, ActivationFunctions.HardSigmoid },
+                { ActivationFunction.BinaryStep, ActivationFunctions.BinaryStep },
+                { ActivationFunction.LeakyReLU,ActivationFunctions.LeakyReLU},
+                { ActivationFunction.Softplus, ActivationFunctions.Softplus },
+                { ActivationFunction.Softsign, ActivationFunctions.Softsign },
                 { ActivationFunction.Sigmoid, ActivationFunctions.Sigmoid },
-                { ActivationFunction.None, ActivationFunctions.None }
-            
+                { ActivationFunction.Swish, ActivationFunctions.Swish },
+                { ActivationFunction.Tanh, ActivationFunctions.Tanh },
+                { ActivationFunction.ReLU, ActivationFunctions.ReLU },
+                { ActivationFunction.GELU, ActivationFunctions.GELU},
+                { ActivationFunction.ELU, ActivationFunctions.ELU },
+                { ActivationFunction.None, ActivationFunctions.None }    
             };
 
 
@@ -41,7 +57,7 @@ public class NeuralNetwork
         for(int i = 0; i < LAYERS.Count; i++)
         {
             //default NO FUNCTION
-            CUSTOM_ACTIVATION_FUNCTIONS.Add(x => x);
+            ACTIVATION_FUNCTIONS.Add(x => x);
         }
     }
 
@@ -72,7 +88,7 @@ public class NeuralNetwork
         for(int i = 0; i < LAYERS.Count; i++)
         {
             //default NO FUNCTION
-            CUSTOM_ACTIVATION_FUNCTIONS.Add(x => x);
+            ACTIVATION_FUNCTIONS.Add(x => x);
         }
     }
 
@@ -106,7 +122,7 @@ public class NeuralNetwork
     }
 
 
-    private class ActivationFunctions
+    private static class ActivationFunctions
     {
 
         public static Func<double, double> ReLU = x => Math.Max(x,0);
