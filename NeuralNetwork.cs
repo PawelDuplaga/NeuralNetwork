@@ -20,6 +20,6 @@ public class NeuralNetwork
 
     public Matrix GetInputs() => LAYERS.First();
     public Matrix GetOutput() => LAYERS.Last(); 
-    
+    //test
 
 }
