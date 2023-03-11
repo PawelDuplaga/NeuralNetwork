@@ -18,7 +18,12 @@ public class NeuralNetwork
         None
     }
 
-
+    public Dictionary<ActivationFunction, Func<double, double>> ActivationFuncDict
+        = new Dictionary<ActivationFunction, Func<double, double>>()
+            {
+                { ActivationFunction.ReLU, ActivationFunctions.ReLU() },
+                { ActivationFunction.Sigmoid, ActivationFunctions.Sigmoid() }        
+            };
 
 
     public NeuralNetwork(int numberOfHiddenLayers, int defaultSizeOfLayers)
@@ -118,7 +123,7 @@ public class NeuralNetwork
     }
 
 
-    private class Helpers
+    private class ActivationFunctions
     {
 
         public static Func<double,double> ReLU() => x => Math.Max(x,0);
