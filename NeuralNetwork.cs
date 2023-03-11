@@ -21,8 +21,10 @@ public class NeuralNetwork
     public Dictionary<ActivationFunction, Func<double, double>> ActivationFuncDict
         = new Dictionary<ActivationFunction, Func<double, double>>()
             {
-                { ActivationFunction.ReLU, ActivationFunctions.ReLU() },
-                { ActivationFunction.Sigmoid, ActivationFunctions.Sigmoid() }        
+                { ActivationFunction.ReLU, ActivationFunctions.ReLU },
+                { ActivationFunction.Sigmoid, ActivationFunctions.Sigmoid },
+                { ActivationFunction.None, ActivationFunctions.None }
+            
             };
 
 
@@ -75,29 +77,10 @@ public class NeuralNetwork
     }
 
 
+
     public Matrix GetInputs() => LAYERS.First();
     public Matrix GetOutput() => LAYERS.Last();
 
-
-
-
-
-
-    private Func<double,double> RunActivationFunction(double x, ActivationFunction enum_) 
-    {
-        switch (enum_) 
-        {
-            case ActivationFunction.ReLU    : return Helpers.ReLU();
-            case ActivationFunction.Sigmoid : return Helpers.Sigmoid();
-            default                         : return Helpers.Sigmoid();
-        }
-
-    }
-
-    private double RunCustomActivationFunction(double x, Func<double,double> func)
-    {
-        return func(x);
-    }
 
     public NeuralNetwork RandomizeWeigghts()
     {
@@ -126,11 +109,29 @@ public class NeuralNetwork
     private class ActivationFunctions
     {
 
-        public static Func<double,double> ReLU() => x => Math.Max(x,0);
-        public static Func<double,double> Sigmoid() => x => x;
+        public static Func<double, double> ReLU = x => Math.Max(x,0);
 
+        public static Func<double, double> LeakyReLU = x => x > 0 ? x : 0.01 * x;
 
+        public static Func<double, double> ELU = x => x > 0 ? x : Math.Exp(x) - 1;
 
+        public static Func<double, double> Sigmoid = x => 1.0 / (1.0 + Math.Exp(-x));
+
+        public static Func<double, double> HardSigmoid = x => Math.Max(0, Math.Min(1, 0.2 * x + 0.5));
+
+        public static Func<double, double> Tanh = x => Math.Tanh(x);
+
+        public static Func<double, double> Softplus = x => Math.Log(1 + Math.Exp(x));
+
+        public static Func<double, double> Softsign = x => x / (1 + Math.Abs(x));
+
+        public static Func<double, double> GELU = x => 0.5 * x * (1 + Math.Tanh(Math.Sqrt(2 / Math.PI) * (x + 0.044715 * Math.Pow(x, 3))));
+
+        public static Func<double, double> Swish = x => x * Sigmoid(x);
+
+        public static Func<double, double> BinaryStep = x => x < 0 ? 0 : 1;
+
+        public static Func<double, double> None = x => x;
 
     }
 
