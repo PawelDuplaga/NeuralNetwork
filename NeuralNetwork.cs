@@ -7,7 +7,8 @@ public class NeuralNetwork
 {
     public List<Matrix> LAYERS = new List<Matrix>();
     public List<Matrix> WEIGHTS = new List<Matrix>();
-    public Func<double, double>[] ACTIVATION_FUNCTIONS;
+    public ActivationFunction[] ACTIVATION_FUNCTIONS_ENUMS;
+    public Func<double, double>[] CUSTOM_ACTIVATION_FUNCTIONS;
 
 
     public enum ActivationFunction
@@ -43,6 +44,22 @@ public class NeuralNetwork
                 { ActivationFunction.None,        ActivationFunctions.None }
             };
 
+    public Dictionary<ActivationFunction, Func<Matrix,Matrix>> MATRIX_ActivationFuncDict
+        = new Dictionary<ActivationFunction, Func<Matrix, Matrix>>()
+            {
+                { ActivationFunction.HardSigmoid, ActivationFunctions.MATRIX_HardSigmoid },
+                { ActivationFunction.BinaryStep,  ActivationFunctions.MATRIX_BinaryStep },
+                { ActivationFunction.LeakyReLU,   ActivationFunctions.MATRIX_LeakyReLU },
+                { ActivationFunction.Softplus,    ActivationFunctions.MATRIX_Softplus },
+                { ActivationFunction.Softsign,    ActivationFunctions.MATRIX_Softsign },
+                { ActivationFunction.Sigmoid,     ActivationFunctions.MATRIX_Sigmoid },
+                { ActivationFunction.Swish,       ActivationFunctions.MATRIX_Swish },
+                { ActivationFunction.Tanh,        ActivationFunctions.MATRIX_Tanh },
+                { ActivationFunction.ReLU,        ActivationFunctions.MATRIX_ReLU },
+                { ActivationFunction.GELU,        ActivationFunctions.MATRIX_GELU },
+                { ActivationFunction.ELU,         ActivationFunctions.MATRIX_ELU },
+                { ActivationFunction.None,        ActivationFunctions.MATRIX_None }
+            };
 
     public Matrix InputLayer => LAYERS.First();
     public Matrix OutputLayer => LAYERS.Last();
@@ -181,8 +198,11 @@ public class NeuralNetwork
 
         for(int i =0; i<this.NumberOfLayers-1; i++)
         {
-            LAYERS[i+1] =  LAYERS[i] * WEIGHTS[i];
+            LAYERS[i] = MATRIX_ActivationFuncDict[ACTIVATION_FUNCTIONS_ENUMS[i]](LAYERS[i]);
+            LAYERS[i+1] = LAYERS[i] * WEIGHTS[i];
         }
+        LAYERS[this.NumberOfLayers-1] = MATRIX_ActivationFuncDict[ACTIVATION_FUNCTIONS_ENUMS[this.NumberOfLayers - 1]](LAYERS[this.NumberOfLayers - 1]);
+
 
         double[] output = new double[this.OutputLayer.columns];
         
@@ -197,12 +217,12 @@ public class NeuralNetwork
 
     public void SetActivationFunctionForLayer(int indexOfLayer, ActivationFunction enum_)
     {
-        ACTIVATION_FUNCTIONS[indexOfLayer] = ActivationFuncDict[enum_];
+        ACTIVATION_FUNCTIONS_ENUMS[indexOfLayer] = enum_;
     }
 
     public void SetActivationFunctionForLayer(int indexOfLayer, Func<double,double> customFunc)
     {
-        ACTIVATION_FUNCTIONS[indexOfLayer] = customFunc;
+        CUSTOM_ACTIVATION_FUNCTIONS[indexOfLayer] = customFunc;
     }
 
 
@@ -258,6 +278,44 @@ public class NeuralNetwork
         public static Func<double, double> BinaryStep = x => x < 0 ? 0 : 1;
 
         public static Func<double, double> None = x => x;
+
+
+        public static Func<Matrix, Matrix> MATRIX_ReLU = matrix => WholeMatrixActivation(matrix, ReLU);                                                          
+
+        public static Func<Matrix, Matrix> MATRIX_LeakyReLU = matrix => WholeMatrixActivation(matrix, LeakyReLU);
+
+        public static Func<Matrix, Matrix> MATRIX_ELU = matrix => WholeMatrixActivation(matrix, ELU);
+
+        public static Func<Matrix, Matrix> MATRIX_Sigmoid = matrix => WholeMatrixActivation(matrix, Sigmoid);
+
+        public static Func<Matrix, Matrix> MATRIX_HardSigmoid = matrix => WholeMatrixActivation(matrix, HardSigmoid);
+
+        public static Func<Matrix, Matrix> MATRIX_Tanh = matrix => WholeMatrixActivation(matrix, Tanh);
+
+        public static Func<Matrix, Matrix> MATRIX_Softplus = matrix => WholeMatrixActivation(matrix, Softplus);
+
+        public static Func<Matrix, Matrix> MATRIX_Softsign = matrix => WholeMatrixActivation(matrix, Softsign);
+
+        public static Func<Matrix, Matrix> MATRIX_GELU = matrix => WholeMatrixActivation(matrix, GELU);
+
+        public static Func<Matrix, Matrix> MATRIX_Swish = matrix => WholeMatrixActivation(matrix, Swish);
+
+        public static Func<Matrix, Matrix> MATRIX_BinaryStep = matrix => WholeMatrixActivation(matrix, BinaryStep);
+
+        public static Func<Matrix, Matrix> MATRIX_None = matrix => WholeMatrixActivation(matrix, None);
+
+
+        public static Matrix WholeMatrixActivation(Matrix matrix, Func<double, double> f)
+        {
+            for (int i = 0; i < matrix.rows; i++)
+            {
+                for (int k = 0; k < matrix.columns; k++)
+                {
+                    matrix[i, k] = f(matrix[i, k]);
+                }
+            }
+            return matrix;
+        }
 
     }
 
