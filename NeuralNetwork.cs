@@ -1,16 +1,14 @@
 ﻿using MatrixAlgebraForDoubles;
-using System;
-using System.Runtime.CompilerServices;
-using System.Security.Cryptography.X509Certificates;
-using static NeuralNetwork;
 
+
+namespace NeuralNetworkManager;
 public class NeuralNetwork
 {
     public List<Matrix> LAYERS = new List<Matrix>();
     public List<Matrix> WEIGHTS = new List<Matrix>();
     public ActivationFunction[] ACTIVATION_FUNCTIONS_ARRAY;
     public Func <double,double>[] CUSTOM_ACTIVATION_FUNCTIONS_ARRAY;
-    private bool useCustomFunctions = false;
+    private bool useCustomFunctions = true;
 
 
 
@@ -70,16 +68,13 @@ public class NeuralNetwork
 
     #region CONSTUCTORS
 
-    public NeuralNetwork(int numberOfHiddenLayers, int defaultSizeOfLayers, bool useCustomFunctions)
-    {
-        this.useCustomFunctions = useCustomFunctions;
 
-        for (int i = 0; i < numberOfHiddenLayers + 1; i++)
-        {
-            LAYERS.Add(new Matrix(1, defaultSizeOfLayers));
-            WEIGHTS.Add(new Matrix(defaultSizeOfLayers, defaultSizeOfLayers));
-        }
-        LAYERS.Add(new Matrix(1, defaultSizeOfLayers));
+ 
+
+    public NeuralNetwork(int numberOfHiddenLayers, int defaultSizeOfLayers) 
+    {
+
+        AddLayersAndWeightToNNet(numberOfHiddenLayers, defaultSizeOfLayers);
 
         CUSTOM_ACTIVATION_FUNCTIONS_ARRAY = new Func<double, double>[LAYERS.Count];
         ACTIVATION_FUNCTIONS_ARRAY = new ActivationFunction[LAYERS.Count];
@@ -87,18 +82,12 @@ public class NeuralNetwork
         {
             ACTIVATION_FUNCTIONS_ARRAY[i] = ActivationFunction.None;
         }
-        this.useCustomFunctions = useCustomFunctions;
     }
 
     public NeuralNetwork(int numberOfHiddenLayers, int defaultSizeOfLayers,
         ActivationFunction AllLayersActivationFunction)
     {
-        for (int i = 0; i < numberOfHiddenLayers + 1; i++)
-        {
-            LAYERS.Add(new Matrix(1, defaultSizeOfLayers));
-            WEIGHTS.Add(new Matrix(defaultSizeOfLayers, defaultSizeOfLayers));
-        }
-        LAYERS.Add(new Matrix(1, defaultSizeOfLayers));
+        AddLayersAndWeightToNNet(numberOfHiddenLayers, defaultSizeOfLayers);
 
         CUSTOM_ACTIVATION_FUNCTIONS_ARRAY = new Func<double, double>[LAYERS.Count];
         ACTIVATION_FUNCTIONS_ARRAY = new ActivationFunction[LAYERS.Count];
@@ -113,12 +102,7 @@ public class NeuralNetwork
         ActivationFunction InputLayerActivationFunction,
         ActivationFunction OutputLayerActivationFunction)
     {
-        for (int i = 0; i < numberOfHiddenLayers + 1; i++)
-        {
-            LAYERS.Add(new Matrix(1, defaultSizeOfLayers));
-            WEIGHTS.Add(new Matrix(defaultSizeOfLayers, defaultSizeOfLayers));
-        }
-        LAYERS.Add(new Matrix(1, defaultSizeOfLayers));
+        AddLayersAndWeightToNNet(numberOfHiddenLayers, defaultSizeOfLayers);
 
         CUSTOM_ACTIVATION_FUNCTIONS_ARRAY = new Func<double, double>[LAYERS.Count];
         ACTIVATION_FUNCTIONS_ARRAY = new ActivationFunction[LAYERS.Count]; ;
@@ -265,6 +249,7 @@ public class NeuralNetwork
         for(int i =0; i < this.WEIGHTS.Count; i++)
         {
             this.WEIGHTS[i].FillRandomInRange(minValue, maxValue);
+            //this.PrintNeuralNetwork();
         }  
         return this;
     }
@@ -274,13 +259,35 @@ public class NeuralNetwork
         for(int i = 0; i < WEIGHTS.Count; i++)
         {
             LAYERS[i].PrintMatrix();
-            Console.Write("       ");
+            Console.WriteLine("  ");
             WEIGHTS[i].PrintMatrix();
-            Console.Write("       ");
+            Console.WriteLine("  ");
         }
         LAYERS[LAYERS.Count - 1].PrintMatrix();
     }
 
+
+
+    public void AddLayersAndWeightToNNet(int[] NumberOfPerceptronsInLayers)
+    {
+        for (int i = 0; i < NumberOfPerceptronsInLayers.Length - 1; i++)
+        {
+            LAYERS.Add(new Matrix(1, NumberOfPerceptronsInLayers[i]));
+            WEIGHTS.Add(new Matrix(NumberOfPerceptronsInLayers[i], NumberOfPerceptronsInLayers[i + 1]));
+        }
+        LAYERS.Add(new Matrix(1, NumberOfPerceptronsInLayers[NumberOfPerceptronsInLayers.Count() - 1]));
+    }
+
+    public void AddLayersAndWeightToNNet(int numberOfHiddenLayers, int defaultSizeOfLayers)
+    {
+        for (int i = 0; i < numberOfHiddenLayers + 1; i++)
+        {
+            LAYERS.Add(new Matrix(1, defaultSizeOfLayers));
+            WEIGHTS.Add(new Matrix(defaultSizeOfLayers, defaultSizeOfLayers));
+        }
+        LAYERS.Add(new Matrix(1, defaultSizeOfLayers));
+    }
+    
     private static class ActivationFunctions
     {
 
