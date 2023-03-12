@@ -2,13 +2,16 @@
 using System;
 using System.Runtime.CompilerServices;
 using System.Security.Cryptography.X509Certificates;
+using static NeuralNetwork;
 
 public class NeuralNetwork
 {
     public List<Matrix> LAYERS = new List<Matrix>();
     public List<Matrix> WEIGHTS = new List<Matrix>();
-    public ActivationFunction[] ACTIVATION_FUNCTIONS_ENUMS;
-    public Func<double, double>[] CUSTOM_ACTIVATION_FUNCTIONS;
+    public Func <double,double>[] ACTIVATION_FUNCTIONS_ARRAY;
+    public Func <double,double>[] CUSTOM_ACTIVATION_FUNCTIONS_ARRAY;
+    private bool useCustomFunctions = false;
+
 
 
     public enum ActivationFunction
@@ -44,7 +47,7 @@ public class NeuralNetwork
                 { ActivationFunction.None,        ActivationFunctions.None }
             };
 
-    public Dictionary<ActivationFunction, Func<Matrix,Matrix>> MATRIX_ActivationFuncDict
+    public Dictionary<ActivationFunction, Func<Matrix,Matrix>> matrix_ActivationFuncDict
         = new Dictionary<ActivationFunction, Func<Matrix, Matrix>>()
             {
                 { ActivationFunction.HardSigmoid, ActivationFunctions.MATRIX_HardSigmoid },
@@ -67,8 +70,10 @@ public class NeuralNetwork
 
     #region CONSTUCTORS
 
-    public NeuralNetwork(int numberOfHiddenLayers, int defaultSizeOfLayers)
+    public NeuralNetwork(int numberOfHiddenLayers, int defaultSizeOfLayers, bool useCustomFunctions)
     {
+        this.useCustomFunctions = useCustomFunctions;
+
         for (int i = 0; i < numberOfHiddenLayers + 1; i++)
         {
             LAYERS.Add(new Matrix(1, defaultSizeOfLayers));
@@ -76,11 +81,13 @@ public class NeuralNetwork
         }
         LAYERS.Add(new Matrix(1, defaultSizeOfLayers));
 
-        ACTIVATION_FUNCTIONS = new Func<double, double>[LAYERS.Count];
+        ACTIVATION_FUNCTIONS_ARRAY = new Func<double, double>[LAYERS.Count];
         for (int i = 0; i < LAYERS.Count; i++)
         {
-            ACTIVATION_FUNCTIONS[i] = ActivationFuncDict[ActivationFunction.None];
+            ACTIVATION_FUNCTIONS_ARRAY[i] = ActivationFuncDict[ActivationFunction.None];
         }
+
+        this.useCustomFunctions = useCustomFunctions;
     }
 
     public NeuralNetwork(int numberOfHiddenLayers, int defaultSizeOfLayers,
@@ -93,10 +100,10 @@ public class NeuralNetwork
         }
         LAYERS.Add(new Matrix(1, defaultSizeOfLayers));
 
-        ACTIVATION_FUNCTIONS = new Func<double, double>[LAYERS.Count];
+        ACTIVATION_FUNCTIONS_ARRAY = new Func<double, double>[LAYERS.Count];
         for (int i = 0; i < LAYERS.Count; i++)
         {
-            ACTIVATION_FUNCTIONS[i] = ActivationFuncDict[HiddenLayersActivationFunction];
+            ACTIVATION_FUNCTIONS_ARRAY[i] = ActivationFuncDict[HiddenLayersActivationFunction];
         }
     }
 
@@ -112,12 +119,12 @@ public class NeuralNetwork
         }
         LAYERS.Add(new Matrix(1, defaultSizeOfLayers));
 
-        ACTIVATION_FUNCTIONS = new Func<double, double>[LAYERS.Count];
-        ACTIVATION_FUNCTIONS[0] = ActivationFuncDict[InputLayerActivationFunction];
-        ACTIVATION_FUNCTIONS[LAYERS.Count - 1] = ActivationFuncDict[OutputLayerActivationFunction];
+        ACTIVATION_FUNCTIONS_ARRAY = new Func<double, double>[LAYERS.Count];
+        ACTIVATION_FUNCTIONS_ARRAY[0] = ActivationFuncDict[InputLayerActivationFunction];
+        ACTIVATION_FUNCTIONS_ARRAY[LAYERS.Count - 1] = ActivationFuncDict[OutputLayerActivationFunction];
         for (int i = 1; i < LAYERS.Count - 1; i++)
         {
-            ACTIVATION_FUNCTIONS[i] = ActivationFuncDict[HiddenLayersActivationFunction];
+            ACTIVATION_FUNCTIONS_ARRAY[i] = ActivationFuncDict[HiddenLayersActivationFunction];
         }
     }
 
@@ -130,10 +137,10 @@ public class NeuralNetwork
         }
         LAYERS.Add(new Matrix(1, NumberOfPerceptronsInLayers[NumberOfPerceptronsInLayers.Count() - 1]));
 
-        ACTIVATION_FUNCTIONS = new Func<double, double>[LAYERS.Count];
+        ACTIVATION_FUNCTIONS_ARRAY = new Func<double, double>[LAYERS.Count];
         for (int i = 0; i < LAYERS.Count; i++)
         {
-            ACTIVATION_FUNCTIONS[i] = ActivationFuncDict[ActivationFunction.None];
+            ACTIVATION_FUNCTIONS_ARRAY[i] = ActivationFuncDict[ActivationFunction.None];
         }
     }
 
@@ -147,10 +154,10 @@ public class NeuralNetwork
         }
         LAYERS.Add(new Matrix(1, NumberOfPerceptronsInLayers[NumberOfPerceptronsInLayers.Count() - 1]));
 
-        ACTIVATION_FUNCTIONS = new Func<double, double>[LAYERS.Count];
+        ACTIVATION_FUNCTIONS_ARRAY = new Func<double, double>[LAYERS.Count];
         for (int i = 0; i < LAYERS.Count; i++)
         {
-            ACTIVATION_FUNCTIONS[i] = ActivationFuncDict[AllLayersActivationFunction];
+            ACTIVATION_FUNCTIONS_ARRAY[i] = ActivationFuncDict[AllLayersActivationFunction];
         }
     }
 
@@ -166,12 +173,12 @@ public class NeuralNetwork
         }
         LAYERS.Add(new Matrix(1, NumberOfPerceptronsInLayers[NumberOfPerceptronsInLayers.Count() - 1]));
 
-        ACTIVATION_FUNCTIONS = new Func<double, double>[LAYERS.Count];
-        ACTIVATION_FUNCTIONS[0] = ActivationFuncDict[InputLayerActivationFunction];
-        ACTIVATION_FUNCTIONS[LAYERS.Count - 1] = ActivationFuncDict[OutputLayerActivationFunction];
+        ACTIVATION_FUNCTIONS_ARRAY = new Func<double, double>[LAYERS.Count];
+        ACTIVATION_FUNCTIONS_ARRAY[0] = ActivationFuncDict[InputLayerActivationFunction];
+        ACTIVATION_FUNCTIONS_ARRAY[LAYERS.Count - 1] = ActivationFuncDict[OutputLayerActivationFunction];
         for (int i = 1; i < LAYERS.Count - 1; i++)
         {
-            ACTIVATION_FUNCTIONS[i] = ActivationFuncDict[HiddenLayersActivationFunction];
+            ACTIVATION_FUNCTIONS_ARRAY[i] = ActivationFuncDict[HiddenLayersActivationFunction];
         }
     }
 
@@ -185,6 +192,8 @@ public class NeuralNetwork
 
     public double[] RunNetwork(double[] inputs)
     {
+        int lastLayerIndex = this.NumberOfLayers - 1;
+
         if (inputs.Length != this.InputLayer.columns)
             throw new Exception($"Wrong number or inputs, Correct number of inputs is {this.InputLayer.columns}");
 
@@ -196,12 +205,12 @@ public class NeuralNetwork
             this.InputLayer[0,i] = inputs[i];
         }
 
-        for(int i =0; i<this.NumberOfLayers-1; i++)
+        for(int i =0; i< lastLayerIndex; i++)
         {
-            LAYERS[i] = MATRIX_ActivationFuncDict[ACTIVATION_FUNCTIONS_ENUMS[i]](LAYERS[i]);
+            LAYERS[i] = matrix_ActivationFuncDict[ACTIVATION_FUNCTIONS_ENUMS[i]](LAYERS[i]);
             LAYERS[i+1] = LAYERS[i] * WEIGHTS[i];
         }
-        LAYERS[this.NumberOfLayers-1] = MATRIX_ActivationFuncDict[ACTIVATION_FUNCTIONS_ENUMS[this.NumberOfLayers - 1]](LAYERS[this.NumberOfLayers - 1]);
+        LAYERS[lastLayerIndex] = matrix_ActivationFuncDict[ACTIVATION_FUNCTIONS_ENUMS[lastLayerIndex]](LAYERS[lastLayerIndex]);
 
 
         double[] output = new double[this.OutputLayer.columns];
@@ -217,24 +226,20 @@ public class NeuralNetwork
 
     public void SetActivationFunctionForLayer(int indexOfLayer, ActivationFunction enum_)
     {
-        ACTIVATION_FUNCTIONS_ENUMS[indexOfLayer] = enum_;
+        ACTIVATION_FUNCTIONS_ARRAY[indexOfLayer] = ActivationFuncDict[enum_];
     }
 
-    public void SetActivationFunctionForLayer(int indexOfLayer, Func<double,double> customFunc)
+    public void SetCustomActivationFunctionForLayer(int indexOfLayer, Func<double,double> customFunc)
     {
-        CUSTOM_ACTIVATION_FUNCTIONS[indexOfLayer] = customFunc;
+        CUSTOM_ACTIVATION_FUNCTIONS_ARRAY[indexOfLayer] = customFunc;
     }
-
-
-
 
     public NeuralNetwork RandomizeWeigghts(double minValue, double maxValue)
     {
         for(int i =0; i < this.WEIGHTS.Count; i++)
         {
             this.WEIGHTS[i].FillRandomInRange(minValue, maxValue);
-        }
-    
+        }  
         return this;
     }
 
@@ -248,9 +253,7 @@ public class NeuralNetwork
             Console.Write("       ");
         }
         LAYERS[LAYERS.Count - 1].PrintMatrix();
-
     }
-
 
     private static class ActivationFunctions
     {
@@ -305,7 +308,7 @@ public class NeuralNetwork
         public static Func<Matrix, Matrix> MATRIX_None = matrix => WholeMatrixActivation(matrix, None);
 
 
-        public static Matrix WholeMatrixActivation(Matrix matrix, Func<double, double> f)
+        private static Matrix WholeMatrixActivation(Matrix matrix, Func<double, double> f)
         {
             for (int i = 0; i < matrix.rows; i++)
             {
