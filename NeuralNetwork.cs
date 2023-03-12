@@ -90,15 +90,10 @@ public class NeuralNetwork
         ActivationFunction OutputLayerActivationFunction)
     {
         AddLayersAndWeightToNNet(numberOfHiddenLayers, defaultSizeOfLayers);
+        SetActivationFunctionsArray(HiddenLayersActivationFunction);
 
-        CUSTOM_ACTIVATION_FUNCTIONS_ARRAY = new Func<double, double>[LAYERS.Count];
-        ACTIVATION_FUNCTIONS_ARRAY = new ActivationFunction[LAYERS.Count]; ;
         ACTIVATION_FUNCTIONS_ARRAY[0] = InputLayerActivationFunction;
         ACTIVATION_FUNCTIONS_ARRAY[LAYERS.Count - 1] = OutputLayerActivationFunction;
-        for (int i = 1; i < LAYERS.Count - 1; i++)
-        {
-            ACTIVATION_FUNCTIONS_ARRAY[i] = HiddenLayersActivationFunction;
-        }
     }
 
     public NeuralNetwork(int[] NumberOfPerceptronsInLayers)
@@ -118,17 +113,12 @@ public class NeuralNetwork
         ActivationFunction HiddenLayersActivationFunction,
         ActivationFunction InputLayerActivationFunction,
         ActivationFunction OutputLayerActivationFunction)
-    {
+    {   
         AddLayersAndWeightToNNet(NumberOfPerceptronsInLayers);
+        SetActivationFunctionsArray(HiddenLayersActivationFunction);
 
-        CUSTOM_ACTIVATION_FUNCTIONS_ARRAY = new Func<double, double>[LAYERS.Count];
-        ACTIVATION_FUNCTIONS_ARRAY = new ActivationFunction[LAYERS.Count];
         ACTIVATION_FUNCTIONS_ARRAY[0] = InputLayerActivationFunction;
         ACTIVATION_FUNCTIONS_ARRAY[LAYERS.Count - 1] = OutputLayerActivationFunction;
-        for (int i = 1; i < LAYERS.Count - 1; i++)
-        {
-            ACTIVATION_FUNCTIONS_ARRAY[i] = HiddenLayersActivationFunction;
-        }
     }
 
     #endregion
