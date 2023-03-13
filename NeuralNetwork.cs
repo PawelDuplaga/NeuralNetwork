@@ -9,6 +9,7 @@ public class NeuralNetwork
     public ActivationFunction[] ACTIVATION_FUNCTIONS_ARRAY;
     public Func <double,double>[] CUSTOM_ACTIVATION_FUNCTIONS_ARRAY;
     private bool useCustomFunctions = true;
+    public double fintess = 0;
 
 
 
@@ -203,6 +204,12 @@ public class NeuralNetwork
         }  
         return this;
     }
+
+    public void SetFintess(Func<Matrix,double> func)
+    {
+        double fintess = func(this.OutputLayer);
+    }
+
 
     public void PrintNeuralNetwork()
     {
