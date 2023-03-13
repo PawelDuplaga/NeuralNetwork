@@ -195,13 +195,23 @@ public class NeuralNetwork
         };
     }
 
-    public NeuralNetwork RandomizeWeigghts(double minValue, double maxValue)
+    public NeuralNetwork RandomizeWeights(double minValue, double maxValue)
     {
         for(int i =0; i < this.WEIGHTS.Count; i++)
         {
             this.WEIGHTS[i].FillRandomInRange(minValue, maxValue);
             //this.PrintNeuralNetwork();
         }  
+        return this;
+    }
+
+    public NeuralNetwork RadomizeWeights_XavierInitialization()
+    {
+        for(int i =0; i< this.WEIGHTS.Count; i++)
+        {
+            WEIGHTS[i] = MatrixXavierInitialization(LAYERS[i].columns, LAYERS[i+1].columns);
+        }
+
         return this;
     }
 
@@ -223,6 +233,24 @@ public class NeuralNetwork
         LAYERS[LAYERS.Count - 1].PrintMatrix();
     }
 
+
+    private static Matrix MatrixXavierInitialization(int n_in, int n_out)
+    {
+        double stddev = Math.Sqrt(2.0 / (n_in + n_out));
+        double[,] weights = new double[n_in, n_out];
+
+        Random rand = new Random();
+
+        for (int i = 0; i < n_in; i++)
+        {
+            for (int j = 0; j < n_out; j++)
+            {
+                weights[i, j] = rand.NextDouble() * stddev * 2 - stddev;
+            }
+        }
+
+        return new Matrix(weights);
+    }
 
 
     private void AddLayersAndWeightToNNet(int[] NumberOfPerceptronsInLayers)
