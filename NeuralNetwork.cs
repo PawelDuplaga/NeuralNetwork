@@ -252,6 +252,24 @@ public class NeuralNetwork
         return new Matrix(weights);
     }
 
+    private static Matrix MatrixHeInitialization(int n_in, int n_out)
+    {
+        double stddev = Math.Sqrt(2.0 / n_in);
+        double[,] weights = new double[n_in, n_out];
+
+        Random rand = new Random();
+
+        for (int i = 0; i < n_in; i++)
+        {
+            for (int j = 0; j < n_out; j++)
+            {
+                weights[i, j] = rand.NextDouble() * stddev;
+            }
+        }
+
+        return new Matrix(weights);
+    }
+
 
     private void AddLayersAndWeightToNNet(int[] NumberOfPerceptronsInLayers)
     {
